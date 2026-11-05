@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - SmartQueue</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+
+    <div class="register-container">
+
+        <h1>SmartQueue</h1>
+        <h2>Customer Login</h2>
+        <p>Login to manage your queue token.</p>
+
+        <form method="POST" action="/login">
+
+            <label>Email Address</label>
+            <input type="email" name="email"
+                   placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" name="password"
+                   placeholder="Enter your password" required>
+
+            <button type="submit">Login</button>
+
+        </form>
+
+        <p>Don't have an account? <a href="/register">Register</a></p>
+
+        <p><a href="/">Back to Home</a></p>
+
+    </div>
+
+</body>
+</html>

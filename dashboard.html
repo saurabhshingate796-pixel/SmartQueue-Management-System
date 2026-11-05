@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - SmartQueue</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .waiting-time {
+            background: #e0f2fe;
+            color: #075985;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .waiting-time h3 {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body class="auth-page">
+
+    <div class="register-container">
+
+        <h1>SmartQueue</h1>
+        <h2>Customer Dashboard</h2>
+
+        <h3>Welcome, {{ session['user_name'] }}!</h3>
+        <p>Manage your queue easily and save your time.</p>
+
+        <hr>
+
+        <h2>My Token Details</h2>
+
+        {% if token %}
+
+            <h1>
+                Token Number:
+                <span id="token-number">{{ token['token_number'] }}</span>
+            </h1>
+
+            <p>
+                Service Type:
+                <span id="service-type">{{ token['service_type'] }}</span>
+            </p>
+
+            <p>
+                Status:
+                <strong id="token-status">{{ token['status']|capitalize }}</strong>
+            </p>
+
+            <hr>
+
+            <div class="live-status">
+
+                <h2>Live Queue Status</h2>
+
+                <h3 id="queue-message">
+                    {% if token['status'] == 'waiting' %}
+                        {{ people_ahead }} People Ahead of You
+                    {% elif token['status'] == 'serving' %}
+                        It's Your Turn!
+                    {% elif token['status'] == 'completed' %}
+                        Your Service is Completed.
+                    {% elif token['status'] == 'skipped' %}
+                        Your Token Was Skipped.
+                    {% endif %}
+                </h3>
+
+                <div class="waiting-time" id="waiting-time-box">
+                    <h3>Estimated Waiting Time</h3>
+                    <h2 id="estimated-time">
+                        {% if token['status'] == 'waiting' %}
+                            {{ people_ahead * 5 }} Minutes
+                        {% else %}
+                            Not Applicable
+                        {% endif %}
+                    </h2>
+                    <small>Approximate estimate: 5 minutes per person.</small>
+                </div>
+
+                <p id="live-indicator">● Live updates enabled</p>
+
+            </div>
+
+        {% else %}
+
+            <p>You have not generated any token yet.</p>
+
+        {% endif %}
+
+        <br>
+
+        <a href="/token">
+            <button type="button">Generate Token</button>
+        </a>
+
+        <br><br>
+
+        <a href="/logout">
+            <button type="button">Logout</button>
+        </a>
+
+    </div>
+
+    {% if token %}
+    <script>
+
+    function updateQueueStatus() {
+
+        fetch('/queue-status')
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.token) {
+
+                document.getElementById('token-number').textContent =
+                    data.token.token_number;
+
+                document.getElementById('service-type').textContent =
+                    data.token.service_type;
+
+                document.getElementById('token-status').textContent =
+                    data.token.status.charAt(0).toUpperCase() +
+                    data.token.status.slice(1);
+
+                let message = '';
+                let waitingTime = '';
+
+                if (data.token.status === 'waiting') {
+                    message = data.people_ahead + ' People Ahead of You';
+                    waitingTime = (data.people_ahead * 5) + ' Minutes';
+                }
+                else if (data.token.status === 'serving') {
+                    message = "It's Your Turn!";
+                    waitingTime = 'Not Applicable';
+                }
+                else if (data.token.status === 'completed') {
+                    message = 'Your Service is Completed.';
+                    waitingTime = 'Completed';
+                }
+                else if (data.token.status === 'skipped') {
+                    message = 'Your Token Was Skipped.';
+                    waitingTime = 'Not Applicable';
+                }
+
+                document.getElementById('queue-message').textContent = message;
+
+                document.getElementById('estimated-time').textContent =
+                    waitingTime;
+            }
+
+        })
+        .catch(error => {
+            document.getElementById('live-indicator').textContent =
+                'Live update temporarily unavailable';
+        });
+    }
+
+    setInterval(updateQueueStatus, 5000);
+
+    </script>
+    {% endif %}
+
+</body>
+</html>
